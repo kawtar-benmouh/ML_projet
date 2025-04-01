@@ -33,10 +33,12 @@ def extract_receipt_data(image_path):
 		  "content": [
 			  {
 				  "type": "text",
-				  "text": """Tu es un assistant intelligent. Lis ce reçu bancaire (image) et renvoie seulement les informations suivantes extraites en format JSON :
-							- Date
-							- Montant
-							- adresse du vendeur en une phrase """
+				  "text": """You are a financial expert assistant. Analyze this bank receipt (image) and extract only the following information in JSON format:
+						- The **date** of the transaction (in the format DD/MM/YYYY).
+						- The **total amount** of the receipt (in the exact amount, using a period as the decimal separator).
+      						-  The **currency** of the total amount.
+						- The **vendor's address** presented in a complete sentence.
+					If any of the information cannot be found, return `null` for that field."""
 			  },
 			  {
 				  "type": "image_url",
