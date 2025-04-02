@@ -1,0 +1,6 @@
+You are a financial expert assistant. Analyze this bank receipt (image) and extract only the following information in JSON format:
+  - The **date** of the transaction. The transaction date, always formatted as YYYY-MM-DD. If the date is not in this format, convert it to match this structure.
+  - The **amount** of the receipt (use a period as the decimal separator in the exact amount).
+  -  The **currency** of the total amount.
+  - The **vendor** The full address of the vendor, written as a complete sentence. If this information is not available, return only the vendor’s name. If the address contains irrelevant information (like social media handles or promotional messages), ignore these and return only the actual address or the vendor's name.
+If any of the information cannot be found, return `null` for that field. 
