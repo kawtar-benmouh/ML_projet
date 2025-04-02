@@ -34,21 +34,25 @@ def encode_image(image_path):
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
+def get_context(file_path):
+  with open(file_path, 'r') as file:
+        prompt_content = file.read()
+  return prompt_content
+
 # Fonction pour extraire les données du reçu
 def extract_receipt_data(image_path, retries=3, delay=5):
     base64_img = encode_image(image_path)
+    
+    # Extraire le nom du fichier de l'image
+    filename = os.path.basename(image_path)
+    
     messages = [
         {
             "role": "user",
             "content": [
                 {
                     "type": "text",
-                    "text": """You are a financial expert assistant. Analyze this bank receipt (image) and extract only the following information in JSON format:
-                      - The **date** of the transaction (in the format YYYY-MM-DD).
-                      - The **amount** of the receipt (use a period as the decimal separator in the exact amount).
-                      -  The **currency** of the total amount.
-                      - The **vendor** The full address of the vendor, written as a complete sentence. If this information is not available, return only the vendor’s name. If the address contains irrelevant information (like social media handles or promotional messages), ignore these and return only the actual address or the vendor's name.
-                    If any of the information cannot be found, return `null` for that field. """
+                    "text": get_context("context.txt")
                 },
                 {
                     "type": "image_url",
@@ -61,30 +65,18 @@ def extract_receipt_data(image_path, retries=3, delay=5):
     for attempt in range(1, retries + 1):
         try:
             print(f"Tentative {attempt} d’analyse des images...")
-            response = client.chat.complete(model=model, messages=messages)
-            content = response.choices[0].message.content
+            response = client.chat.complete(
+              model=model, 
+              messages=messages, 
+              response_format = {
+                "type": "json_object"
+              }
+            )
+            
+            content = json.loads(response.choices[0].message.content)
+            content['filename'] = filename
             print("Réponse brute :", content)
-
-            match = re.search(r"\{.*\}", content, re.DOTALL)
-            if match:
-                json_text = match.group(0)
-                data = json.loads(json_text)
-
-                # Normalisation de la date
-                date_formats = ["%Y-%m-%d"]
-                for fmt in date_formats:
-                    try:
-                        parsed_date = datetime.datetime.strptime(data["date"], fmt)
-                        data["date"] = parsed_date.strftime("%Y-%m-%d")
-                        break
-                    except Exception:
-                        continue
-                else:
-                    print("Format de date non reconnu :", data["date"])
-
-                return data
-            else:
-                raise ValueError("Aucun JSON valide trouvé dans la réponse.")
+            return content            
 
         except Exception as e:
             print(f"Échec tentative {attempt} : {e}")
@@ -94,8 +86,8 @@ def extract_receipt_data(image_path, retries=3, delay=5):
             else:
                 print("Abandon après plusieurs échecs.")
                 return None
-
-# Fonction pour traiter un lot d'images dans un répertoire
+  
+  # Fonction pour traiter un lot d'images dans un répertoire
 def process_images_in_directory(directory_path, batch_size=14, delay=40):
     # Liste toutes les images dans le répertoire
     image_paths = [os.path.join(directory_path, f) for f in os.listdir(directory_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
@@ -130,16 +122,18 @@ def process_images_in_directory(directory_path, batch_size=14, delay=40):
             time.sleep(delay)
 
     return results
-
-# Spécifie le chemin du répertoire contenant les images
+  
+  # Spécifie le chemin du répertoire contenant les images
 directory_path = 'receipts'  # Change ce chemin par le répertoire contenant tes images
-
-# Traiter les images par lots depuis le répertoire
+  
+  # Traiter les images par lots depuis le répertoire
 results = process_images_in_directory(directory_path)
-
-# Si des résultats ont été extraits, les afficher
+  
+  # Si des résultats ont été extraits, les afficher
 if results:
     print("Résultats extraits :")
     print(json.dumps(results, indent=2))
 else:
     print("Aucune donnée extraite!")
+
+
