@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Batch processing of receipts from a directory
-
-Required libraries: mistralai, rapidfuzz, pandas
-"""
 
 # Installer les bibliothèques requises
 #!pip install mistralai rapidfuzz pandas python-dotenv
@@ -47,14 +43,12 @@ def extract_receipt_data(image_path, retries=3, delay=5):
             "content": [
                 {
                     "type": "text",
-                    "text": """Tu es un assistant intelligent. Lis ce reçu bancaire (image) et renvoie uniquement les informations suivantes dans un objet JSON clair avec les clés exactes suivantes :
-{
-  "date": "...",
-  "amount": ...,
-  "currency": "...",
-  "vendor": "..."
-}
-Le champ 'amount' doit être un nombre (pas une chaîne)."""
+                    "text": """You are a financial expert assistant. Analyze this bank receipt (image) and extract only the following information in JSON format:
+                      - The **date** of the transaction (in the format YYYY-MM-DD).
+                      - The **amount** of the receipt (use a period as the decimal separator in the exact amount).
+                      -  The **currency** of the total amount.
+                      - The **vendor** The full address of the vendor, written as a complete sentence. If this information is not available, return only the vendor’s name. If the address contains irrelevant information (like social media handles or promotional messages), ignore these and return only the actual address or the vendor's name.
+                    If any of the information cannot be found, return `null` for that field. """
                 },
                 {
                     "type": "image_url",
@@ -66,10 +60,10 @@ Le champ 'amount' doit être un nombre (pas une chaîne)."""
 
     for attempt in range(1, retries + 1):
         try:
-            print(f"🧠 Tentative {attempt} d’analyse OCR...")
+            print(f"Tentative {attempt} d’analyse des images...")
             response = client.chat.complete(model=model, messages=messages)
             content = response.choices[0].message.content
-            print("🔍 Réponse brute :", content)
+            print("Réponse brute :", content)
 
             match = re.search(r"\{.*\}", content, re.DOTALL)
             if match:
@@ -77,9 +71,7 @@ Le champ 'amount' doit être un nombre (pas une chaîne)."""
                 data = json.loads(json_text)
 
                 # Normalisation de la date
-                date_formats = [
-                    "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y", "%d %b %Y", "%d %B %Y"
-                ]
+                date_formats = ["%Y-%m-%d"]
                 for fmt in date_formats:
                     try:
                         parsed_date = datetime.datetime.strptime(data["date"], fmt)
@@ -97,44 +89,44 @@ Le champ 'amount' doit être un nombre (pas une chaîne)."""
         except Exception as e:
             print(f"Échec tentative {attempt} : {e}")
             if attempt < retries:
-                print(f"🔁 Nouvelle tentative dans {delay} secondes...")
+                print(f"Nouvelle tentative dans {delay} secondes...")
                 time.sleep(delay)
             else:
                 print("Abandon après plusieurs échecs.")
                 return None
 
 # Fonction pour traiter un lot d'images dans un répertoire
-def process_images_in_directory(directory_path, batch_size=10, delay=60):
+def process_images_in_directory(directory_path, batch_size=14, delay=40):
     # Liste toutes les images dans le répertoire
     image_paths = [os.path.join(directory_path, f) for f in os.listdir(directory_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-    print(f"📁 Trouvé {len(image_paths)} images dans le répertoire '{directory_path}'.")
+    print(f"Trouvé {len(image_paths)} images dans le répertoire '{directory_path}'.")
 
     results = []
 
-    # Diviser les images en lots de batch_size (par défaut 10)
+    # Diviser les images en lots de batch_size (par défaut 14)
     for i in range(0, len(image_paths), batch_size):
         batch = image_paths[i:i+batch_size]
-        print(f"🔄 Traitement du lot {i//batch_size + 1}...")
+        print(f"Traitement du lot {i//batch_size + 1}...")
 
         # Traiter chaque image du lot
         for image_path in batch:
-            print(f"📸 Traitement de l'image : {image_path}")
+            print(f"Traitement de l'image : {image_path}")
             result = extract_receipt_data(image_path)
             if result:
                 results.append(result)
             else:
-                print(f"❌ Aucune donnée extraite pour l'image {image_path}")
+                print(f"Aucune donnée extraite pour l'image {image_path}")
 
         # Sauvegarder les résultats après chaque lot
         if results:
-            with open(f"recu_extrait_batch_{i//batch_size + 1}.json", "w", encoding="utf-8") as f:
+            with open(f"receipts_extracted_data.json", "w", encoding="utf-8") as f:
                 json.dump(results, f, indent=2, ensure_ascii=False)
-            print(f"✅ Fichier 'recu_extrait_batch_{i//batch_size + 1}.json' généré avec succès.")
+            print(f"Les données ont été rajoutées dans le fichier receipts_extracted_data.json avec succès.")
 
         # Attendre le délai avant de traiter le prochain lot
         if i + batch_size < len(image_paths):
-            print(f"⏳ Attente de {delay} secondes avant le traitement du prochain lot...")
+            print(f"Attente de {delay} secondes avant le traitement du prochain lot...")
             time.sleep(delay)
 
     return results
@@ -147,7 +139,7 @@ results = process_images_in_directory(directory_path)
 
 # Si des résultats ont été extraits, les afficher
 if results:
-    print("✅ Résultats extraits :")
+    print("Résultats extraits :")
     print(json.dumps(results, indent=2))
 else:
-    print("❌ Aucune donnée extraite.")
+    print("Aucune donnée extraite!")
