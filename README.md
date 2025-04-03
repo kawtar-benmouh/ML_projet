@@ -4,7 +4,6 @@ Ce projet vise à automatiser l’association des factures aux transactions banc
 
 ## Fonctionnalités
 **Importation** : Relevés bancaires (CSV) & factures (JPG)
-**OCR** : Extraction automatique du texte des factures
 **Matching Intelligent** :Algorithme de correspondance basé sur des critères comme le montant, la date et le nom du marchand
 **Interface** : Développement avec Streamlit
 **Exportation** : Génération d’un fichier recapitulatif des associations trouvées
@@ -17,13 +16,21 @@ la Comparaison des montants et des dates pour une correspondance optimale.
 **Déploiement et Interface** : Développement de l'interface en Streamlit avec un hébergement sur Streamlit Cloud pour un accès facile.
 
 ## Instructions d'Utilisation
-** Installer les dépendances**
-** Lancer l'application via Streamlit**
-** Importer un relevé bancaire au format CSV**
-** Importer les factures sous format JPG**
-** Laisser l'application traiter les données**
-** Visualiser les résultats sous forme de tableau**
-** Exporter les résultats si besoin**
+**Installer les dépendances** :'''bash 
+pip install -r requirements.txt
+
+## Technologies Utilisées  
+- **Python** : Langage principal du projet 
+- **Pandas** : Manipulation et analyse des données CSV
+- **Pytesseract ** : Extraction du texte depuis les images de factures
+- **Streamlit** : Création d’une interface utilisateur simple et efficace
+- **Fuzzy Matching ** : Algorithme de correspondance des transactions
+
+## Exemple d'utilisation  
+Après avoir installé les dépendances, lancez l'application avec : '''bash
+streamlit run app.py
+
+
 
 ## Conclusion 
 Ce projet de matching automatique des factures avec un relevé bancaire vise à faciliter la gestion financière
