@@ -56,5 +56,4 @@ Recall = \frac{TP}{TP + FN}
 
 ### Analyse
 - Un **Recall élevé** signifie que la majorité des factures ont bien été appariées avec leurs transactions correspondantes.
-- Un **Recall faible** indique que plusieurs factures valides n’ont pas été retrouvées, ce qui peut nécessiter des ajustements dans l’algorithme de matching.
-
+- Un **Recall faible** indique que plusieurs factures valides n’ont pas été retrouvées, ce qui peut nécessiter des ajustements dans l’algorithme de matching .
