@@ -1,41 +1,60 @@
-# Application de Matching Automatique de Factures
+# Matching Automatique de Factures à un Relevé Bancaire
 
-Ce projet vise à automatiser l’association des factures aux transactions bancaires à l’aide de l’OCR et du matching intelligent.
+## Description du Projet
+Ce projet vise à automatiser le **matching** entre des factures numérisées et les transactions bancaires correspondantes. Grâce à l'utilisation de **PixTral** et d'algorithmes de **matching textuel**, le système identifie et associe les transactions de manière efficace.
 
-## Fonctionnalités
-**Importation** : Relevés bancaires (CSV) & factures (JPG)
-**Matching Intelligent** :Algorithme de correspondance basé sur des critères comme le montant, la date et le nom du marchand
-**Interface** : Développement avec Streamlit
-**Exportation** : Génération d’un fichier recapitulatif des associations trouvées
+## Fonctionnalités Principales
+- Extraction des informations de factures (montant, date, fournisseur) via **PixTral**.
+- Chargement et analyse des transactions bancaires à partir d'un fichier CSV.
+- Algorithme de **matching intelligent** basé sur la similarité des données.
+- Interface utilisateur développée avec **Streamlit**.
 
-### Aspects Techniques
-**lecture et Parsing des fichiers** : Lecture du relevé bancaire (CSV) avec pandas et Extraction de texte depuis les factures (JPG) avec Tesseract OCR
-**Prétraitement des données** : Nettoyage des données extraites (normalisation des formats de date, montants, suppression des bruits textuels)
-**Matching Algorithmique** : Utilisation d'un algorithme de fuzzy matching pour associer des valeurs similaires malgré des variations de format et 
-la Comparaison des montants et des dates pour une correspondance optimale.
-**Déploiement et Interface** : Développement de l'interface en Streamlit avec un hébergement sur Streamlit Cloud pour un accès facile.
-
-## Instructions d'Utilisation
-**Installer les dépendances** :'''bash 
-pip install -r requirements.txt
-
-## Technologies Utilisées  
-- **Python** : Langage principal du projet 
+## Technologies Utilisées
+- **Python** : Langage principal du projet
 - **Pandas** : Manipulation et analyse des données CSV
-- **Pytesseract ** : Extraction du texte depuis les images de factures
+- **PixTral** : Extraction du texte depuis les images de factures
 - **Streamlit** : Création d’une interface utilisateur simple et efficace
-- **Fuzzy Matching ** : Algorithme de correspondance des transactions
+- **Fuzzy Matching (FuzzyWuzzy ou RapidFuzz)** : Algorithme de correspondance des transactions
 
-## Exemple d'utilisation  
-Après avoir installé les dépendances, lancez l'application avec : '''bash
+## Installation et Utilisation
+### 1. Cloner le dépôt
+```bash
+git clone https://github.com/kawtar-benmouh/ML_projet.git
+cd ML_projet
+```
+
+### 2. Installer les dépendances
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Lancer l'application
+```bash
 streamlit run app.py
+```
 
+## Stratégie de Matching
+L’algorithme de matching repose sur plusieurs critères :
+- **Montant** : Vérification de l’égalité ou d’une marge d’erreur acceptable.
+- **Date** : Correspondance exacte ou rapprochée.
+- **Nom du fournisseur** : Matching basé sur la similarité textuelle.
+- **Références de facture** : Extraction et comparaison si disponibles.
 
+## Évaluation des Performances
+Afin de mesurer l’efficacité du matching entre les factures et les transactions bancaires, 
+nous utilisons la **métrique de rappel (Recall)**. Cette métrique permet d’évaluer la capacité du modèle à retrouver toutes les correspondances correctes.
 
-## Conclusion 
-Ce projet de matching automatique des factures avec un relevé bancaire vise à faciliter la gestion financière
-en automatisant le rapprochement entre des transactions et leurs justificatifs.
-Grâce à des technologies comme Streamlit pour l’interface utilisateur,
-Pandas pour le traitement des données, et Pytesseract pour l’extraction de texte OCR,
-l’application simplifie une tâche habituellement repetitif.
+### Formule du Recall
+Le Recall est défini comme suit :
+```math
+Recall = \frac{TP}{TP + FN}
+```
+- **TP (True Positives)** : Une transaction du relevé bancaire est correctement associée à la bonne facture.
+- **FN (False Negatives)** : Une transaction avait une facture correspondante, mais l’algorithme ne l’a pas détectée.
+- **FP (False Positive )** : L’algorithme a associé une transaction à une facture erronée.
+- **TN (True Negative )** : Aucune facture ne correspond à une transaction, et l’algorithme n’a pas fait d’association incorrecte.
+
+### Analyse
+- Un **Recall élevé** signifie que la majorité des factures ont bien été appariées avec leurs transactions correspondantes.
+- Un **Recall faible** indique que plusieurs factures valides n’ont pas été retrouvées, ce qui peut nécessiter des ajustements dans l’algorithme de matching.
 
